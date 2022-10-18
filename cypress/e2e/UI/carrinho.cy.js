@@ -1,17 +1,28 @@
 /// <reference types="cypress" />
 
-context('Carrinho', () => {
-    
+const itemPage = require('../../support/pages/item.page')
+
+describe('Adicionar item ao carrinho', () => {
+
     beforeEach(() => {
         cy.visit('/')
     });
 
-    it('Validar carrinho', () => {       
-        cy.adicionaAoCarrinho('Ajax Full-Zip Sweatshirt', 'XS', 'Red')
-        //cy.adicionaAoCarrinho('Arcadio Gym Short', '32', 'Black')
-        //cy.adicionaAoCarrinho('Argus All-Weather Tank', 'XS', 'Gray')
+    it('Validar carrinho', () => {
+        cy.fixture('items').then((itemsList) => {
+            itemsList.forEach(item => {
+                cy.buscarItem(item.name)
+                itemPage.addItem(item.size, item.color, 2)
+            });
 
-        cy.abrirCarrinho()
-        cy.get('.product-name > a').should('contain', 'Ajax Full-Zip Sweatshirt')
+            cy.abrirCarrinho()
+
+            itemsList.forEach(item => {
+                cy.get('.product-name > a').should('contain', item.name)
+            });
+
+            cy.get('strong > .woocommerce-Price-amount > bdi').invoke('text').invoke('substring', 2).then(parseFloat).should('be.lt', 990)
+        })
+        
     });
 });
